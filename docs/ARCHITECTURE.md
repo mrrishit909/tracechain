@@ -36,8 +36,8 @@ bytes/string ──decodeInput──▶ text ──normalizeJson / normalizeCsv�
      shortfalls with the exact gram difference.
    - The ledger runs only after structural checks pass, so a structurally broken batch reports structural
      errors only.
-4. **Snapshot**. Records are sorted canonically and stamped with schema/rule versions, the synthetic label and
-   the disclaimer. Inventory totals include a conservation check. The snapshot carries a SHA-256
+4. **Snapshot** (`tracechain.snapshot.v2`). Records are sorted canonically and stamped with schema/rule versions
+   and `inputDeclaredSynthetic` (what the input claimed; not evidence of origin). Inventory totals include a conservation check. The snapshot carries a SHA-256
    `contentHash` over canonical JSON with `sourceRow` stripped, so the JSON and CSV encodings of the same data
    hash identically. Source rows are still retained in the snapshot for findings. The snapshot is deep-frozen
    and registered in a module `WeakSet`. Trace, evidence and query functions accept only registered
@@ -68,7 +68,9 @@ bytes/string ──decodeInput──▶ text ──normalizeJson / normalizeCsv�
    - scope (input lot, unit, lots, transformations, shipments) and units;
    - customers, the affected shipped quantity, and all contributing paths with `pathsComplete`;
    - warnings (conservative propagation, evidence scope, affected inventory on hand, path truncation);
-   - schema, rule and report versions, the synthetic label and disclaimer, and the snapshot batch ID and hash;
+   - schema, rule and report versions (`tracechain.report.v2`), the data-origin fields (`dataOrigin`,
+     `dataOriginVerified`, `dataOriginLabel`, `contentInspectionNotice`, origin-specific `disclaimer`), and the
+     snapshot batch ID and hash. See **Data origin** below;
    - annotations and an optional caller-supplied `generatedAt`.
 
    The CSV export round-trips through `parseReportCsv` to exactly the same object as the JSON export; this is
@@ -93,6 +95,23 @@ bytes/string ──decodeInput──▶ text ──normalizeJson / normalizeCsv�
    signature or MAC**. Anyone can recompute it, so a report, the CSV/JSON export, or a `parseReportCsv` result
    carries **no authenticity, integrity or origin guarantee** once it leaves the process. The recomputation
    guarantee covers only reports built in-process by `buildReport`. Edited exported files are not detected.
+
+## Data origin (`origin.js`)
+
+Origin comes from the control path that loaded the data, never from the content. The engine does not inspect
+content and cannot detect or prevent real or sensitive data. A `synthetic: true` flag (still required by the batch
+schema), a batch ID, a file name or a byte-identical copy of the fixture is not evidence.
+
+- `bundled-synthetic-fixture`: only the app's own loader (`ReviewSession.loadBundledSample`) fetches a fixed
+  bundled path and claims this origin. The workspace and `buildReport` honor the claim only when the accepted
+  snapshot equals the pinned `BUNDLED_FIXTURE` (batch ID and content hash). Otherwise they downgrade it.
+- `unverified-user-supplied`: the default for everything else, including local file imports
+  (`importUserFile`), `importInput`, and direct `Workspace.importBatch`/`buildReport` callers.
+
+Report readers: `parseReportCsv` and `parseReportJson` accept v2 only when its origin fields are consistent, and a
+bundled claim must cite the pinned snapshot. They upconvert legacy `tracechain.report.v1` to v2 with
+`unverified-user-supplied` origin, `upconvertedFrom` and `legacyClaims`, because v1 labeled every report synthetic.
+They reject other versions. A report read from a file still carries no origin guarantee (see above).
 
 ## Security notes
 

@@ -439,9 +439,12 @@ test('10. export round-trip: scope, units, all paths, warnings, versions, synthe
   assert.equal(json.reportSchemaVersion, REPORT_SCHEMA_VERSION);
   assert.equal(json.schemaVersion, SCHEMA_VERSION);
   assert.equal(json.ruleVersion, RULE_VERSION);
-  assert.equal(json.synthetic, true);
-  assert.equal(json.syntheticLabel, SYNTHETIC_LABEL);
-  assert.equal(json.disclaimer, DISCLAIMER);
+  // Report v2: a caller-supplied import is unverified even though it declares synthetic: true (see provenance.test.js).
+  assert.equal('synthetic' in json, false);
+  assert.equal(json.dataOrigin, 'unverified-user-supplied');
+  assert.equal(json.dataOriginLabel, 'UNVERIFIED USER-SUPPLIED DATA');
+  assert.notEqual(json.disclaimer, DISCLAIMER);
+  assert.doesNotMatch(JSON.stringify(json), new RegExp(SYNTHETIC_LABEL));
   assert.match(json.disclaimer, /NOT certified safe/);
   assert.deepEqual(json.snapshot, { batchId: 'TC-SYN-001', contentHash: ws.currentSnapshot().contentHash });
   assert.deepEqual(json.scope, { direction: 'forward', affectedInputLot: 'A', unit: 'g', lots: ['A', 'A1', 'A2', 'M'], transformations: ['T1', 'T2'], shipments: ['S1', 'S2', 'S5'] });

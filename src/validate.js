@@ -2,7 +2,7 @@
 // when the whole candidate batch is valid (atomic acceptance).
 import { sha256Hex } from './sha256.js';
 import {
-  LIMITS, SCHEMA_VERSION, RULE_VERSION, SYNTHETIC_LABEL, DISCLAIMER, UNIT,
+  LIMITS, SCHEMA_VERSION, RULE_VERSION, SNAPSHOT_VERSION, UNIT,
   TraceChainError, checkedAdd, checkedSub, deepFreeze,
 } from './limits.js';
 
@@ -290,12 +290,13 @@ export function validateCandidate(c) {
   const totalRemaining = remaining.reduce((a, r) => checkedAdd(a, r.grams), 0);
   const body = {
     kind: 'tracechain.snapshot',
+    snapshotVersion: SNAPSHOT_VERSION,
     batchId: c.batchId,
     schemaVersion: SCHEMA_VERSION,
     ruleVersion: RULE_VERSION,
-    synthetic: true,
-    syntheticLabel: SYNTHETIC_LABEL,
-    disclaimer: DISCLAIMER,
+    // What the input asserted about itself. Not evidence of origin; origin is tracked by the workspace from the
+    // control path that loaded the data (see origin.js).
+    inputDeclaredSynthetic: true,
     unit: UNIT,
     lots: [...lots.values()].sort(byId).map((l) => ({
       id: l.id, productId: l.productId, unit: l.unit, label: l.label,

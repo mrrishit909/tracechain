@@ -17,7 +17,11 @@ export const LIMITS = Object.freeze({
 
 export const SCHEMA_VERSION = 'tracechain.batch.v1';
 export const RULE_VERSION = 'tracechain.rules.v1.1';
-export const REPORT_SCHEMA_VERSION = 'tracechain.report.v1';
+// v2: origin comes from the control path (dataOrigin*), not a hardcoded synthetic claim. v1 is read as legacy only.
+export const REPORT_SCHEMA_VERSION = 'tracechain.report.v2';
+export const LEGACY_REPORT_SCHEMA_VERSION = 'tracechain.report.v1';
+// v2: the snapshot records inputDeclaredSynthetic instead of synthetic/syntheticLabel/disclaimer (changes contentHash).
+export const SNAPSHOT_VERSION = 'tracechain.snapshot.v2';
 export const UNIT = 'g';
 export const SYNTHETIC_LABEL = 'SYNTHETIC DEMO DATA';
 export const DISCLAIMER =

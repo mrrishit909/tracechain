@@ -6,10 +6,8 @@ const el = (tag, text, cls) => { const n = document.createElement(tag); if (text
 
 async function run() {
   try {
-    const resp = await fetch('fixtures/TC-SYN-001.json');
-    if (!resp.ok) throw new Error(`sample fetch failed (HTTP ${resp.status})`);
     const s = new ReviewSession();
-    const res = s.importInput(new Uint8Array(await resp.arrayBuffer()), 'json', 'TC-SYN-001.json');
+    const res = await s.loadBundledSample('json');
     if (res.status !== 'accepted') throw new Error(`sample rejected: ${res.errors?.[0]?.message ?? res.message}`);
     const fwd = s.forward('A');
     const r = fwd.result;

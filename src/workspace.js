@@ -6,6 +6,7 @@ import { normalizeJson, normalizeCsv, readId, readText, readTimestamp, ErrorColl
 import { validateCandidate } from './validate.js';
 import { traceForward, traceBackward, eventEvidence } from './trace.js';
 import { buildReport, reportToJson, reportToCsv } from './report.js';
+import { checkClaimedOrigin, resolveOrigin, originFields } from './origin.js';
 
 /** Pure import: returns { ok, snapshot } or { ok:false, errors, candidate } without touching any workspace. */
 export function importCandidate(input, options) {
@@ -33,6 +34,7 @@ function submittedRowIds(candidate) {
 
 export class Workspace {
   #current = null;
+  #origin = null; // origin of #current, decided by the import control path (never by content)
   #annotations = [];
   #nextAnnotation = 1;
   #now;
@@ -44,14 +46,25 @@ export class Workspace {
     this.#now = now ?? (() => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'));
   }
 
-  /** Atomic import. On rejection the previous snapshot is retained and labeled, never presented as this result. */
+  /**
+   * Atomic import. On rejection the previous snapshot is retained and labeled, never presented as this result.
+   * `origin` defaults to unverified user-supplied. Only the app's own bundled-fixture loader may pass
+   * ORIGIN_BUNDLED_FIXTURE, and even then it is honored only if the snapshot matches the pinned fixture.
+   */
   importBatch(input, options) {
+    // Malformed options are still reported as a rejection by importCandidate; only a bad origin value throws.
+    const claimed = checkClaimedOrigin(options !== null && typeof options === 'object' && !Array.isArray(options) ? options.origin : undefined);
     const res = importCandidate(input, options);
     if (res.ok) {
       this.#current = res.snapshot;
-      return deepFreeze({ status: 'accepted', batchId: res.snapshot.batchId, contentHash: res.snapshot.contentHash, snapshot: res.snapshot });
+      this.#origin = resolveOrigin(claimed, res.snapshot);
+      return deepFreeze({
+        status: 'accepted', batchId: res.snapshot.batchId, contentHash: res.snapshot.contentHash,
+        ...originFields(this.#origin), snapshot: res.snapshot,
+      });
     }
     const prior = this.#current;
+    const priorLabel = prior ? originFields(this.#origin).dataOriginLabel : null;
     return deepFreeze({
       status: 'rejected',
       submittedBatchId: res.candidate?.batchId ?? null,
@@ -63,13 +76,18 @@ export class Workspace {
       submittedRowIds: submittedRowIds(res.candidate),
       note: 'Submitted rows are shown for diagnosis only. They are not an accepted partial graph and cannot produce an affected-customer report.',
       priorSnapshot: prior
-        ? { batchId: prior.batchId, contentHash: prior.contentHash, label: `Prior accepted snapshot from batch "${prior.batchId}" is retained unchanged. It is NOT the result of this rejected import.` }
-        : { batchId: null, contentHash: null, label: 'No prior accepted snapshot exists; no trace is available.' },
+        ? { batchId: prior.batchId, contentHash: prior.contentHash, dataOrigin: this.#origin, label: `Prior accepted snapshot from batch "${prior.batchId}" (${priorLabel}) is retained unchanged. It is NOT the result of this rejected import.` }
+        : { batchId: null, contentHash: null, dataOrigin: null, label: 'No prior accepted snapshot exists; no trace is available.' },
     });
   }
 
   currentSnapshot() {
     return this.#current;
+  }
+
+  /** Origin label fields of the current snapshot, or null when none is accepted. */
+  dataOrigin() {
+    return this.#current ? originFields(this.#origin) : null;
   }
 
   #requireSnapshot() {
@@ -78,7 +96,13 @@ export class Workspace {
   }
 
   #label(s) {
-    return { snapshotBatchId: s.batchId, snapshotHash: s.contentHash, snapshotLabel: `Results from accepted snapshot batch "${s.batchId}"` };
+    const o = originFields(this.#origin);
+    return {
+      snapshotBatchId: s.batchId, snapshotHash: s.contentHash,
+      snapshotLabel: `Results from accepted snapshot batch "${s.batchId}" — ${o.dataOriginLabel}`,
+      dataOrigin: o.dataOrigin, dataOriginVerified: o.dataOriginVerified, dataOriginLabel: o.dataOriginLabel,
+      contentInspectionNotice: o.contentInspectionNotice,
+    };
   }
 
   traceForward(lotId) {
@@ -140,7 +164,7 @@ export class Workspace {
     }
     if (format !== 'json' && format !== 'csv') throw new TraceChainError('FORMAT', 'format must be "json" or "csv"');
     const s = this.#requireSnapshot();
-    const report = buildReport(s, traceForward(s, lotId), this.annotations(), { generatedAt });
+    const report = buildReport(s, traceForward(s, lotId), this.annotations(), { generatedAt, origin: this.#origin });
     if (format === 'json') return reportToJson(report);
     if (format === 'csv') return reportToCsv(report);
     throw new TraceChainError('FORMAT', 'format must be "json" or "csv"');

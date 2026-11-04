@@ -35,7 +35,8 @@ function showImport(res) {
   box.replaceChildren();
   if (res.status === 'error') { box.append(el('p', res.message, 'error')); return; }
   if (res.status === 'accepted') {
-    box.append(el('p', `Accepted batch "${res.batchId}" from ${res.sourceLabel}.`, 'ok'), el('p', `Content hash (not a signature): ${res.contentHash}`, 'hash'));
+    box.append(el('p', `Accepted batch "${res.batchId}" from ${res.sourceLabel}.`, 'ok'), el('p', `Data origin: ${res.dataOriginLabel}`, res.dataOriginVerified ? 'prior' : 'error'),
+      el('p', res.contentInspectionNotice, 'note'), el('p', `Content hash (not a signature): ${res.contentHash}`, 'hash'));
     const inv = res.snapshot.inventory;
     box.append(table('Snapshot inventory ledger (grams)', ['Received', 'Shipped', 'Configured loss', 'Remaining'],
       [[g(inv.totalReceived), g(inv.totalShipped), g(inv.totalConfiguredLoss), g(inv.totalRemaining)]]));
@@ -74,7 +75,7 @@ function renderForward() {
     const fwd = session.forward();
     if (!fwd) { out.replaceChildren(el('p', 'Select a lot.', 'empty')); return; }
     const r = fwd.result;
-    out.replaceChildren(el('p', fwd.snapshotLabel, 'prior'), el('p', `${g(r.affectedShippedQuantity)} affected shipped from lot ${r.affectedInputLot}`, 'figure'));
+    out.replaceChildren(el('p', fwd.snapshotLabel, 'prior'), el('p', fwd.contentInspectionNotice, 'note'), el('p', `${g(r.affectedShippedQuantity)} affected shipped from lot ${r.affectedInputLot}`, 'figure'));
     out.append(table('Affected customers', ['Customer', 'Name', 'Affected received'], r.customers.map((c) => [c.customerId, c.name, g(c.affectedReceived)])));
     const un = session.unreachedCustomers(fwd);
     out.append(el('p', `Not reached by this trace: ${un.map((c) => c.id).join(', ') || 'none'}. Outside this trace only — NOT certified safe.`, 'note'));
@@ -141,7 +142,7 @@ function renderAnnotations() {
 
 async function loadSample(fmt) {
   $('import-status').replaceChildren(el('p', 'Loading sample…', 'loading'));
-  try { showImport(session.importInput(await fetchText(`fixtures/TC-SYN-001.${fmt}`), fmt, `sample TC-SYN-001.${fmt}`)); } catch (e) { fail($('import-status'), e); }
+  try { showImport(await session.loadBundledSample(fmt)); } catch (e) { fail($('import-status'), e); }
 }
 
 document.querySelectorAll('[data-sample]').forEach((b) => b.addEventListener('click', () => loadSample(b.dataset.sample)));
@@ -157,7 +158,7 @@ $('file-form').addEventListener('submit', async (ev) => {
   if (!f) { $('import-status').replaceChildren(el('p', 'Choose a file first.', 'error')); return; }
   if (f.size > MAX_FILE_BYTES) { showImport({ status: 'error', message: `File is ${f.size} bytes; limit is ${MAX_FILE_BYTES} bytes. Nothing imported.` }); return; }
   const fmt = document.querySelector('input[name=fmt]:checked').value;
-  showImport(session.importInput(new Uint8Array(await f.arrayBuffer()), fmt, `file ${f.name}`));
+  showImport(session.importUserFile(new Uint8Array(await f.arrayBuffer()), fmt, f.name));
 });
 $('lot-select').addEventListener('change', (e) => { session.selectedLot = e.target.value; renderForward(); });
 $('back-select').addEventListener('change', (e) => { session.backwardTarget = e.target.value || null; renderBackward(); });
@@ -176,7 +177,7 @@ document.querySelectorAll('[data-export]').forEach((b) => b.addEventListener('cl
     a.download = `tracechain-report-${session.selectedLot}.${fmt}`;
     a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    $('export-status').textContent = `Downloaded ${a.download} (${text.length} characters, synthetic).`;
+    $('export-status').textContent = `Downloaded ${a.download} (${text.length} characters). Labeled: ${session.dataOrigin()?.dataOriginLabel ?? 'unknown origin'}.`;
   } catch (e) { $('export-status').textContent = `Export unavailable: ${e.message}`; }
 }));
 // The landing's primary action names this workflow: open it with the labeled sample already loaded.

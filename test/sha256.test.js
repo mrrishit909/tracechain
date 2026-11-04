@@ -20,8 +20,10 @@ test('sha256Hex matches node:crypto at every padding boundary length 0..200', ()
   for (let n = 0; n <= 200; n++) assert.equal(sha256Hex('q'.repeat(n)), ref('q'.repeat(n)), `length ${n}`);
 });
 
-test('fixture snapshot keeps its exact pre-port content hash', () => {
+// tracechain.snapshot.v2 deliberately changed this hash (was sha256:1237a046…dc1f9 under v1) by replacing the
+// content-derived synthetic/syntheticLabel/disclaimer fields with inputDeclaredSynthetic and a snapshotVersion.
+test('fixture snapshot keeps its exact snapshot-v2 content hash', () => {
   const ws = new Workspace();
   const res = ws.importBatch(readFileSync(new URL('../fixtures/TC-SYN-001.json', import.meta.url)), { format: 'json' });
-  assert.equal(res.contentHash, 'sha256:1237a046874eae6a56397a4b688c2ab76ae9fdeb4443630844bc9f73995dc1f9');
+  assert.equal(res.contentHash, 'sha256:c327cddd1fb34aa4fb3ce31c635d461b8ccfd360b15f3cf953df9b2b16ea9605');
 });

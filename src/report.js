@@ -1,7 +1,10 @@
 // Affected-customer report export (JSON and CSV) and CSV round-trip parsing.
 import {
-  LIMITS, REPORT_SCHEMA_VERSION, SCHEMA_VERSION, RULE_VERSION, SYNTHETIC_LABEL, DISCLAIMER, UNIT, TraceChainError, optionsObject,
+  LIMITS, REPORT_SCHEMA_VERSION, LEGACY_REPORT_SCHEMA_VERSION, SCHEMA_VERSION, RULE_VERSION, UNIT, TraceChainError, optionsObject,
 } from './limits.js';
+import {
+  ORIGIN_UNVERIFIED, ORIGIN_BUNDLED_FIXTURE, isOrigin, resolveOrigin, originFields, isBundledFixtureSnapshot,
+} from './origin.js';
 import { toCsv, parseCsv, unescapeFormula } from './csv.js';
 import { isAcceptedSnapshot } from './validate.js';
 import { traceForward } from './trace.js';
@@ -46,7 +49,8 @@ function checkAnnotations(snapshot, annotations) {
  * recomputed result.
  */
 export function buildReport(snapshot, trace, annotations = [], options) {
-  const { generatedAt = null } = optionsObject(options, 'report options');
+  // origin defaults to unverified; a bundled-fixture claim is honored only for the pinned fixture snapshot.
+  const { generatedAt = null, origin } = optionsObject(options, 'report options');
   if (generatedAt !== null && !readTimestamp(generatedAt, 'generatedAt', 'report', new ErrorCollector())) {
     throw new TraceChainError('BAD_ARGUMENT', 'generatedAt must be null or a valid ISO UTC timestamp');
   }
@@ -65,13 +69,12 @@ export function buildReport(snapshot, trace, annotations = [], options) {
       'Trace content differs from the trace recomputed on this snapshot; scope, customers, quantities, paths and warnings cannot be bound to it');
   }
   checkAnnotations(snapshot, annotations);
+  const effectiveOrigin = resolveOrigin(origin, snapshot);
   return {
     reportSchemaVersion: REPORT_SCHEMA_VERSION,
     schemaVersion: SCHEMA_VERSION,
     ruleVersion: RULE_VERSION,
-    synthetic: true,
-    syntheticLabel: SYNTHETIC_LABEL,
-    disclaimer: DISCLAIMER,
+    ...originFields(effectiveOrigin),
     generatedAt: generatedAt ?? null,
     snapshot: { batchId: snapshot.batchId, contentHash: snapshot.contentHash },
     scope: {
@@ -102,9 +105,16 @@ const HEADER = ['section', 'key', 'value', 'customerId', 'lotId', 'eventId', 'qu
 export function reportToCsv(report) {
   const rows = [];
   const meta = (k, v) => rows.push(['meta', k, String(v), '', '', '', '', '', '']);
-  meta('syntheticLabel', report.syntheticLabel);
+  meta('dataOriginLabel', report.dataOriginLabel);
+  meta('dataOrigin', report.dataOrigin);
+  meta('dataOriginVerified', report.dataOriginVerified);
+  meta('contentInspectionNotice', report.contentInspectionNotice);
   meta('disclaimer', report.disclaimer);
   meta('reportSchemaVersion', report.reportSchemaVersion);
+  if (report.upconvertedFrom !== undefined) {
+    meta('upconvertedFrom', report.upconvertedFrom);
+    meta('legacyClaims', JSON.stringify(report.legacyClaims));
+  }
   meta('schemaVersion', report.schemaVersion);
   meta('ruleVersion', report.ruleVersion);
   meta('snapshotBatchId', report.snapshot.batchId);
@@ -124,7 +134,10 @@ export function reportToCsv(report) {
   return toCsv(HEADER, rows);
 }
 
-/** Parse an exported report CSV back into a report-shaped object (for round-trip verification). */
+/**
+ * Parse an exported report CSV back into a report-shaped object (for round-trip verification). Current v2 reports
+ * round-trip exactly; legacy v1 reports are upconverted to v2 with unverified origin; other versions are rejected.
+ */
 export function parseReportCsv(text) {
   if (typeof text !== 'string') throw new TraceChainError('BAD_REPORT', 'Report CSV must be a string');
   const { header, rows } = parseCsv(text);
@@ -157,15 +170,26 @@ export function parseReportCsv(text) {
       throw new TraceChainError('BAD_REPORT', `Unknown report section "${r.section.slice(0, 32)}"`);
     }
   }
+  const snapshot = { batchId: m.snapshotBatchId, contentHash: m.snapshotHash };
+  const verified = m.dataOriginVerified === 'true' ? true : m.dataOriginVerified === 'false' ? false : m.dataOriginVerified;
+  let legacyClaims = m.legacyClaims;
+  if (legacyClaims !== undefined) {
+    try { legacyClaims = JSON.parse(legacyClaims); } catch { throw new TraceChainError('BAD_REPORT', 'legacyClaims is not valid JSON'); }
+  }
+  const origin = readOrigin(m.reportSchemaVersion, {
+    dataOrigin: m.dataOrigin, dataOriginVerified: verified, dataOriginLabel: m.dataOriginLabel,
+    contentInspectionNotice: m.contentInspectionNotice, disclaimer: m.disclaimer,
+    upconvertedFrom: m.upconvertedFrom, legacyClaims,
+    // v1 CSV carried a syntheticLabel row but no synthetic flag; it is kept only as a legacy claim.
+    synthetic: undefined, syntheticLabel: m.syntheticLabel,
+  }, snapshot);
   return {
-    reportSchemaVersion: m.reportSchemaVersion,
+    reportSchemaVersion: REPORT_SCHEMA_VERSION,
     schemaVersion: m.schemaVersion,
     ruleVersion: m.ruleVersion,
-    synthetic: m.syntheticLabel === SYNTHETIC_LABEL,
-    syntheticLabel: m.syntheticLabel,
-    disclaimer: m.disclaimer,
+    ...origin,
     generatedAt: m.generatedAt === '' ? null : m.generatedAt,
-    snapshot: { batchId: m.snapshotBatchId, contentHash: m.snapshotHash },
+    snapshot,
     scope: { direction: 'forward', affectedInputLot: m.affectedInputLot, unit: m.units, ...out.scope },
     units: m.units,
     customers: out.customers,
@@ -175,4 +199,67 @@ export function parseReportCsv(text) {
     warnings: out.warnings,
     annotations: out.annotations,
   };
+}
+
+const LEGACY_NOTE =
+  `Upconverted from ${LEGACY_REPORT_SCHEMA_VERSION}. That version labeled every report SYNTHETIC regardless of where ` +
+  'the data came from, so its synthetic claim is not evidence and the origin is treated as unverified user-supplied. ' +
+  'Its snapshotHash was computed under the earlier snapshot format and will not match a current snapshot of the same data.';
+const ORIGIN_KEYS = ['dataOrigin', 'dataOriginVerified', 'dataOriginLabel', 'contentInspectionNotice', 'disclaimer'];
+
+/**
+ * Origin fields for a report being read back from a file. The result is still only what the file says (reports are
+ * unsigned and carry no origin guarantee), but:
+ *  - v2 origin fields must be internally consistent, and a bundled-fixture claim must cite the pinned fixture snapshot;
+ *  - v1 synthetic claims are never carried forward as an origin; v1 is upconverted to unverified user-supplied;
+ *  - any other version is rejected.
+ */
+function readOrigin(version, c, snapshot) {
+  const bad = (why) => { throw new TraceChainError('BAD_REPORT', why); };
+  if (version === REPORT_SCHEMA_VERSION) {
+    if (!isOrigin(c.dataOrigin)) bad('dataOrigin is missing or unknown');
+    const fields = originFields(c.dataOrigin);
+    for (const k of ORIGIN_KEYS) if (c[k] !== fields[k]) bad(`${k} does not match dataOrigin "${c.dataOrigin}"`);
+    if (c.dataOrigin === ORIGIN_BUNDLED_FIXTURE && !isBundledFixtureSnapshot(snapshot)) {
+      bad('Report claims the bundled-fixture origin but cites a different snapshot');
+    }
+    if (c.upconvertedFrom === undefined && c.legacyClaims === undefined) return fields;
+    if (c.upconvertedFrom !== LEGACY_REPORT_SCHEMA_VERSION || c.dataOrigin !== ORIGIN_UNVERIFIED
+      || c.legacyClaims === null || typeof c.legacyClaims !== 'object' || Array.isArray(c.legacyClaims)) {
+      bad('Upconverted report must come from the legacy version and stay unverified');
+    }
+    return { ...fields, upconvertedFrom: c.upconvertedFrom, legacyClaims: c.legacyClaims };
+  }
+  if (version === LEGACY_REPORT_SCHEMA_VERSION) {
+    return {
+      ...originFields(ORIGIN_UNVERIFIED),
+      upconvertedFrom: LEGACY_REPORT_SCHEMA_VERSION,
+      legacyClaims: {
+        synthetic: c.synthetic ?? null, syntheticLabel: c.syntheticLabel ?? null, disclaimer: c.disclaimer ?? null, note: LEGACY_NOTE,
+      },
+    };
+  }
+  return bad(`Unsupported reportSchemaVersion "${String(version).slice(0, 64)}"; expected ${REPORT_SCHEMA_VERSION} or legacy ${LEGACY_REPORT_SCHEMA_VERSION}`);
+}
+
+const BODY_KEYS = ['generatedAt', 'snapshot', 'scope', 'units', 'customers', 'affectedShippedQuantity', 'paths', 'pathsComplete', 'warnings', 'annotations'];
+const V2_KEYS = ['reportSchemaVersion', 'schemaVersion', 'ruleVersion', ...ORIGIN_KEYS, ...BODY_KEYS];
+const V1_KEYS = ['reportSchemaVersion', 'schemaVersion', 'ruleVersion', 'synthetic', 'syntheticLabel', 'disclaimer', ...BODY_KEYS];
+const sameKeys = (obj, keys) => canonical(Object.keys(obj).sort()) === canonical([...keys].sort());
+
+/** Parse an exported report JSON (current v2, or legacy v1 upconverted to unverified origin). */
+export function parseReportJson(text) {
+  if (typeof text !== 'string') throw new TraceChainError('BAD_REPORT', 'Report JSON must be a string');
+  let doc;
+  try { doc = JSON.parse(text); } catch { throw new TraceChainError('BAD_REPORT', 'Report JSON is not valid JSON'); }
+  if (doc === null || typeof doc !== 'object' || Array.isArray(doc)) throw new TraceChainError('BAD_REPORT', 'Report JSON must be an object');
+  const v = doc.reportSchemaVersion;
+  const upconverted = v === REPORT_SCHEMA_VERSION && Object.hasOwn(doc, 'upconvertedFrom');
+  const keys = v === LEGACY_REPORT_SCHEMA_VERSION ? V1_KEYS : upconverted ? [...V2_KEYS, 'upconvertedFrom', 'legacyClaims'] : V2_KEYS;
+  if ((v === REPORT_SCHEMA_VERSION || v === LEGACY_REPORT_SCHEMA_VERSION) && !sameKeys(doc, keys)) {
+    throw new TraceChainError('BAD_REPORT', `Report JSON keys do not match ${v}`);
+  }
+  const origin = readOrigin(v, doc, doc.snapshot);
+  const body = Object.fromEntries(BODY_KEYS.map((k) => [k, doc[k]]));
+  return { reportSchemaVersion: REPORT_SCHEMA_VERSION, schemaVersion: doc.schemaVersion, ruleVersion: doc.ruleVersion, ...origin, ...body };
 }

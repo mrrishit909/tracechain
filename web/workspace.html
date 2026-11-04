@@ -9,7 +9,7 @@
 </head>
 <body class="desk">
 <a class="skip" href="#main">Skip to workspace</a>
-<p class="synthetic-banner" role="note">SYNTHETIC DEMO DATA — fictional records. No customer notifications, real recalls or FDA/FSMA claims. Customers absent from a report are NOT certified safe.</p>
+<p class="synthetic-banner" role="note">Only the bundled sample TC-SYN-001 is synthetic demo data. Files you import are labeled UNVERIFIED USER-SUPPLIED DATA: TraceChain does not inspect content and cannot detect or prevent real or sensitive data. No customer notifications, real recalls or FDA/FSMA claims. Customers absent from a report are NOT certified safe.</p>
 <header class="masthead"><a class="wordmark" href="index.html">TraceChain</a><span class="desk-name">Review desk</span></header>
 <main id="main">
   <h1>Lot lineage review</h1>
@@ -22,6 +22,7 @@
     </div>
     <form id="file-form" class="file-form">
       <fieldset><legend>Import your own UTF-8 file (max 1 MiB)</legend>
+        <p class="note">Imported files are always labeled UNVERIFIED USER-SUPPLIED DATA, even if they declare synthetic: true or are named like the sample. Their content is not inspected; do not import real or sensitive data.</p>
         <label><input type="radio" name="fmt" value="json" checked> JSON</label>
         <label><input type="radio" name="fmt" value="csv"> CSV</label>
         <label for="file">File</label> <input id="file" type="file" accept=".json,.csv,application/json,text/csv">

@@ -3,6 +3,11 @@
 > **SYNTHETIC DEMO DATA ONLY.** Fictional lots, facilities and customers. This is not a live recall tool,
 > safety certification, FDA/FSMA compliance determination or regulatory export format. Customers absent
 > from a report are **not** certified safe.
+>
+> Only the bundled fixture TC-SYN-001, loaded by the app itself, is labeled synthetic. Anything else you import
+> (local files, caller input) is labeled **UNVERIFIED USER-SUPPLIED DATA** even if it declares `synthetic: true`.
+> TraceChain does not inspect content and cannot detect or prevent real or sensitive data. Reports use
+> `tracechain.report.v2`; legacy v1 reports are read as unverified (see `docs/ARCHITECTURE.md`, "Data origin").
 
 Dependency-free ESM JavaScript (Node >= 20) implementing the TraceChain v1 lot-lineage engine:
 strict JSON/UTF-8 CSV import, integer-gram validation, atomic batch acceptance into immutable snapshots,
@@ -32,8 +37,8 @@ workspace, and JSON/CSV downloads. Workflow logic lives in `web/state.js` and is
 (`test/web-workflow.test.js`). **No browser, mobile or screen-reader run has happened yet.** See `docs/DESIGN.md`.
 
 The snapshot `contentHash` now comes from `src/sha256.js`, a dependency-free synchronous SHA-256, so the same engine
-runs in browsers. `test/sha256.test.js` checks it against `node:crypto` and checks that the fixture keeps its prior
-hash. This is a content hash, not a signature.
+runs in browsers. `test/sha256.test.js` checks it against `node:crypto` and pins the fixture's snapshot hash
+(deliberately changed by `tracechain.snapshot.v2`). This is a content hash, not a signature.
 
 ## Fixture TC-SYN-001
 
