@@ -5,11 +5,13 @@
   "description": "TraceChain synthetic vertical slice: dependency-free lot lineage engine (SYNTHETIC DATA ONLY, not a compliance tool)",
   "type": "module",
   "main": "src/index.js",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node --test test/*.test.js",
     "test:audit": "node --test audit/independent.test.mjs",
-    "build": "node scripts/build.mjs",
+    "build": "node scripts/build.mjs && node scripts/headers.mjs",
     "serve": "node scripts/serve.mjs"
   }
 }
