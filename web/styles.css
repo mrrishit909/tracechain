@@ -39,7 +39,7 @@ button:hover { background: var(--cobalt-tint); }
 button[type=submit] { background: var(--cobalt); border-color: var(--cobalt); color: #fff; }
 input, select, textarea { font: inherit; max-width: 100%; padding: 0.35rem; border: 1px solid var(--ink-soft); border-radius: 4px; }
 textarea { width: 100%; min-height: 4rem; }
-fieldset { border: 1px solid var(--rule); border-radius: 4px; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
+fieldset { min-width: 0; max-width: 100%; border: 1px solid var(--rule); border-radius: 4px; display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
 .query, .ann { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 0.4rem 0.75rem; align-items: center; }
 .query button, .ann button { grid-column: 2; justify-self: start; }
 .table-wrap { overflow-x: auto; max-width: 100%; }
