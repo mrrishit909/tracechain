@@ -9,6 +9,7 @@ export const LIMITS = Object.freeze({
   maxCsvColumns: 32,
   maxTraversalSteps: 200000,
   maxPaths: 10000,
+  maxPathElements: 500000, // total path nodes allocated while enumerating contributing paths
   maxAnnotations: 1000,
   maxErrors: 500,
   maxSessions: 1000,
@@ -34,6 +35,15 @@ export class TraceChainError extends Error {
     this.code = code;
     this.details = details;
   }
+}
+
+/** Normalize an optional options argument; malformed caller values get a predictable BAD_ARGUMENT. */
+export function optionsObject(value, name) {
+  if (value === undefined) return {};
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    throw new TraceChainError('BAD_ARGUMENT', `${name} must be a plain options object`);
+  }
+  return value;
 }
 
 /** Checked integer addition: both operands and result must be safe integers. */

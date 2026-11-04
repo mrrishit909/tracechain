@@ -27,6 +27,13 @@ function stripSourceRows(value) {
 
 const byId = (a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 
+// Snapshots minted by validateCandidate. Traversal accepts only these, so a forged (even frozen) object
+// cannot reach graph code. Holds no data itself; a session cannot reach another's snapshot without the reference.
+const ACCEPTED = new WeakSet();
+export function isAcceptedSnapshot(s) {
+  return s !== null && typeof s === 'object' && ACCEPTED.has(s);
+}
+
 /**
  * Validate a normalized candidate. Returns { ok: true, snapshot } or { ok: false, errors, truncated }.
  * Never returns a partial graph on failure.
@@ -156,19 +163,29 @@ export function validateCandidate(c) {
     }
   }
 
-  // --- acyclic lot graph (Kahn), iterative and bounded by edge count ---
+  // --- acyclic lot graph (Kahn), iterative. Bipartite lot -> transformation -> lot graph keeps edges
+  // O(inputs + outputs) instead of an inputs x outputs cross product. Transformation nodes are keyed by
+  // record index (not eventId) because duplicate event IDs and lot/event ID collisions are possible here.
+  const lotNode = (id) => `L:${id}`;
+  const txNode = (idx) => `T:${idx}`;
   const out = new Map();
   const indeg = new Map();
-  for (const id of lots.keys()) { out.set(id, new Set()); indeg.set(id, 0); }
-  for (const t of c.transformations) {
-    for (const i of t.inputs) for (const o of t.outputs) {
-      if (!lots.has(i.lotId) || !lots.has(o.lotId) || i.lotId === o.lotId) continue;
-      if (!out.get(i.lotId).has(o.lotId)) {
-        out.get(i.lotId).add(o.lotId);
-        indeg.set(o.lotId, indeg.get(o.lotId) + 1);
-      }
+  for (const id of lots.keys()) { out.set(lotNode(id), []); indeg.set(lotNode(id), 0); }
+  c.transformations.forEach((t, idx) => {
+    const tn = txNode(idx);
+    out.set(tn, []);
+    indeg.set(tn, 0);
+    for (const i of t.inputs) {
+      if (!lots.has(i.lotId)) continue;
+      out.get(lotNode(i.lotId)).push(tn);
+      indeg.set(tn, indeg.get(tn) + 1);
     }
-  }
+    for (const o of t.outputs) {
+      if (!lots.has(o.lotId)) continue;
+      out.get(tn).push(lotNode(o.lotId));
+      indeg.set(lotNode(o.lotId), indeg.get(lotNode(o.lotId)) + 1);
+    }
+  });
   const queue = [...indeg].filter(([, d]) => d === 0).map(([id]) => id);
   let visited = 0;
   while (queue.length) {
@@ -179,8 +196,27 @@ export function validateCandidate(c) {
       if (indeg.get(nx) === 0) queue.push(nx);
     }
   }
-  if (visited !== lots.size) {
-    const cyc = [...indeg].filter(([, d]) => d > 0).map(([id]) => id).sort();
+  if (visited !== indeg.size) {
+    // Nodes left after Kahn are on a cycle or downstream of one; prune nodes with no outgoing edge
+    // inside the leftover set (reverse Kahn) so the diagnostic names cycle members only.
+    const left = new Set([...indeg].filter(([, d]) => d > 0).map(([k]) => k));
+    const outdeg = new Map();
+    const preds = new Map([...left].map((k) => [k, []]));
+    for (const k of left) {
+      const nx = out.get(k).filter((x) => left.has(x));
+      outdeg.set(k, nx.length);
+      for (const x of nx) preds.get(x).push(k);
+    }
+    const prune = [...left].filter((k) => outdeg.get(k) === 0);
+    while (prune.length) {
+      const k = prune.pop();
+      left.delete(k);
+      for (const p of preds.get(k)) {
+        outdeg.set(p, outdeg.get(p) - 1);
+        if (outdeg.get(p) === 0) prune.push(p);
+      }
+    }
+    const cyc = [...left].filter((k) => k.startsWith('L:')).map((k) => k.slice(2)).sort();
     err('CYCLE', `Lot lineage contains a cycle among lots ${cyc.join(', ')}; traversal refused`, { lotIds: cyc });
   }
 
@@ -282,7 +318,9 @@ export function validateCandidate(c) {
   };
   if (!body.inventory.conservationHolds) throw new TraceChainError('INTERNAL', 'Inventory conservation failed');
   body.contentHash = `sha256:${createHash('sha256').update(canonicalJson(stripSourceRows(body))).digest('hex')}`;
-  return { ok: true, snapshot: deepFreeze(body) };
+  deepFreeze(body);
+  ACCEPTED.add(body);
+  return { ok: true, snapshot: body };
 }
 
 export { stripSourceRows, LIMITS };

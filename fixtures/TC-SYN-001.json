@@ -1,0 +1,59 @@
+{
+  "schemaVersion": "tracechain.batch.v1",
+  "batchId": "TC-SYN-001",
+  "synthetic": true,
+  "lots": [
+    { "id": "A", "productId": "P-SYN-RAW-A", "unit": "g" },
+    { "id": "B", "productId": "P-SYN-RAW-B", "unit": "g" },
+    { "id": "U", "productId": "P-SYN-RAW-U", "unit": "g" },
+    { "id": "A1", "productId": "P-SYN-CUT-A1", "unit": "g" },
+    { "id": "A2", "productId": "P-SYN-CUT-A2", "unit": "g" },
+    { "id": "M", "productId": "P-SYN-MIX-M", "unit": "g" }
+  ],
+  "customers": [
+    { "id": "C1", "name": "Fictional Customer One" },
+    { "id": "C2", "name": "Fictional Customer Two" },
+    { "id": "C3", "name": "Fictional Customer Three" },
+    { "id": "C4", "name": "Fictional Customer Four" }
+  ],
+  "events": [
+    { "id": "R-A", "type": "receipt", "timestamp": "2026-01-05T08:00:00Z", "facilityId": "FAC-SYN-1", "sourceReference": "SYN-DOC-R-A" },
+    { "id": "R-B", "type": "receipt", "timestamp": "2026-01-05T09:00:00Z", "facilityId": "FAC-SYN-1", "sourceReference": "SYN-DOC-R-B" },
+    { "id": "R-U", "type": "receipt", "timestamp": "2026-01-05T10:00:00Z", "facilityId": "FAC-SYN-1", "sourceReference": "SYN-DOC-R-U" },
+    { "id": "T1", "type": "transformation", "timestamp": "2026-01-06T08:00:00Z", "facilityId": "FAC-SYN-2", "sourceReference": "SYN-DOC-T1" },
+    { "id": "T2", "type": "transformation", "timestamp": "2026-01-07T08:00:00Z", "facilityId": "FAC-SYN-2", "sourceReference": "SYN-DOC-T2" },
+    { "id": "S1", "type": "shipment", "timestamp": "2026-01-08T08:00:00Z", "facilityId": "FAC-SYN-3", "sourceReference": "SYN-DOC-S1" },
+    { "id": "S2", "type": "shipment", "timestamp": "2026-01-08T09:00:00Z", "facilityId": "FAC-SYN-3", "sourceReference": "SYN-DOC-S2" },
+    { "id": "S3", "type": "shipment", "timestamp": "2026-01-08T10:00:00Z", "facilityId": "FAC-SYN-3", "sourceReference": "SYN-DOC-S3" },
+    { "id": "S4", "type": "shipment", "timestamp": "2026-01-08T11:00:00Z", "facilityId": "FAC-SYN-3", "sourceReference": "SYN-DOC-S4" },
+    { "id": "S5", "type": "shipment", "timestamp": "2026-01-09T08:00:00Z", "facilityId": "FAC-SYN-3", "sourceReference": "SYN-DOC-S5" }
+  ],
+  "receipts": [
+    { "eventId": "R-A", "lotId": "A", "quantity": 100000, "unit": "g" },
+    { "eventId": "R-B", "lotId": "B", "quantity": 50000, "unit": "g" },
+    { "eventId": "R-U", "lotId": "U", "quantity": 20000, "unit": "g" }
+  ],
+  "transformations": [
+    {
+      "eventId": "T1",
+      "inputs": [{ "lotId": "A", "quantity": 100000 }],
+      "outputs": [{ "lotId": "A1", "quantity": 60000 }, { "lotId": "A2", "quantity": 40000 }],
+      "configuredLoss": 0,
+      "unit": "g"
+    },
+    {
+      "eventId": "T2",
+      "inputs": [{ "lotId": "A2", "quantity": 40000 }, { "lotId": "B", "quantity": 20000 }],
+      "outputs": [{ "lotId": "M", "quantity": 60000 }],
+      "configuredLoss": 0,
+      "unit": "g"
+    }
+  ],
+  "shipments": [
+    { "eventId": "S1", "lotId": "A1", "quantity": 20000, "customerId": "C1", "unit": "g" },
+    { "eventId": "S2", "lotId": "M", "quantity": 30000, "customerId": "C2", "unit": "g" },
+    { "eventId": "S3", "lotId": "B", "quantity": 10000, "customerId": "C3", "unit": "g" },
+    { "eventId": "S4", "lotId": "U", "quantity": 5000, "customerId": "C4", "unit": "g" },
+    { "eventId": "S5", "lotId": "M", "quantity": 10000, "customerId": "C1", "unit": "g" }
+  ]
+}

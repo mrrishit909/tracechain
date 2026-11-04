@@ -1,3 +1,10 @@
-claude-stream.jsonl
-claude-stderr.log
 node_modules/
+dist/
+claude-*-stream.jsonl
+claude-stream.jsonl
+claude-*.log
+claude-owned-pid.txt
+CLAUDE-TASK.md
+RESUME-TASK.md
+REMEDIATION-TASK.md
+FRONTEND-TASK.md

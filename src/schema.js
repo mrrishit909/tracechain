@@ -359,7 +359,8 @@ export function normalizeCsv(text) {
     const o = Object.create(null);
     header.forEach((h, idx) => { if (r.cells[idx] !== '') o[h] = r.cells[idx]; });
     const rt = o.recordType;
-    const allowed = CSV_ALLOWED[rt];
+    // Own-property lookup only: recordType values like __proto__/constructor/toString must not hit Object.prototype.
+    const allowed = typeof rt === 'string' && Object.hasOwn(CSV_ALLOWED, rt) ? CSV_ALLOWED[rt] : null;
     if (!allowed) {
       errs.add('UNKNOWN_RECORD_TYPE', `recordType "${String(rt ?? '').slice(0, 32)}" is not recognized`, { sourceRow: src });
       continue;

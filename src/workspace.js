@@ -1,6 +1,6 @@
 // Per-session workspace: atomic imports, retained prior snapshot, reviewer annotations, report export.
 // Each workspace holds its own private state; there is no module-level mutable state shared between sessions.
-import { LIMITS, REJECTION_COMPLETENESS_MESSAGE, TraceChainError, deepFreeze } from './limits.js';
+import { LIMITS, REJECTION_COMPLETENESS_MESSAGE, TraceChainError, deepFreeze, optionsObject } from './limits.js';
 import { decodeInput } from './input.js';
 import { normalizeJson, normalizeCsv, readId, readText, readTimestamp, ErrorCollector } from './schema.js';
 import { validateCandidate } from './validate.js';
@@ -8,9 +8,10 @@ import { traceForward, traceBackward, eventEvidence } from './trace.js';
 import { buildReport, reportToJson, reportToCsv } from './report.js';
 
 /** Pure import: returns { ok, snapshot } or { ok:false, errors, candidate } without touching any workspace. */
-export function importCandidate(input, { format } = {}) {
+export function importCandidate(input, options) {
   let candidate = null;
   try {
+    const { format } = optionsObject(options, 'import options');
     if (format !== 'json' && format !== 'csv') {
       throw new TraceChainError('FORMAT', 'format must be explicitly "json" or "csv" (no sniffing, URLs or files)');
     }
@@ -37,13 +38,15 @@ export class Workspace {
   #now;
 
   /** @param {{ now?: () => string }} opts  injectable ISO-UTC clock for deterministic annotations */
-  constructor({ now } = {}) {
+  constructor(options) {
+    const { now } = optionsObject(options, 'Workspace options');
+    if (now !== undefined && typeof now !== 'function') throw new TraceChainError('BAD_ARGUMENT', 'now must be a function');
     this.#now = now ?? (() => new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'));
   }
 
   /** Atomic import. On rejection the previous snapshot is retained and labeled, never presented as this result. */
-  importBatch(input, { format } = {}) {
-    const res = importCandidate(input, { format });
+  importBatch(input, options) {
+    const res = importCandidate(input, options);
     if (res.ok) {
       this.#current = res.snapshot;
       return deepFreeze({ status: 'accepted', batchId: res.snapshot.batchId, contentHash: res.snapshot.contentHash, snapshot: res.snapshot });
@@ -94,7 +97,8 @@ export class Workspace {
   }
 
   /** Annotations are stored beside (never inside) the immutable snapshot and cite it by batch ID and hash. */
-  addAnnotation({ reviewer, targetType, targetId, note } = {}) {
+  addAnnotation(annotation) {
+    const { reviewer, targetType, targetId, note } = optionsObject(annotation, 'annotation');
     const s = this.#requireSnapshot();
     if (this.#annotations.length >= LIMITS.maxAnnotations) throw new TraceChainError('ANNOTATION_LIMIT', 'Too many annotations');
     const errs = new ErrorCollector();
@@ -128,7 +132,13 @@ export class Workspace {
     return s ? this.#annotations.filter((a) => a.snapshotHash === s.contentHash) : [];
   }
 
-  exportReport(lotId, { format = 'json', generatedAt } = {}) {
+  exportReport(lotId, options) {
+    const { format = 'json', generatedAt = null } = optionsObject(options, 'export options');
+    if (generatedAt !== null) {
+      const errs = new ErrorCollector();
+      if (!readTimestamp(generatedAt, 'generatedAt', 'export', errs)) throw new TraceChainError('BAD_ARGUMENT', errs.errors[0].message);
+    }
+    if (format !== 'json' && format !== 'csv') throw new TraceChainError('FORMAT', 'format must be "json" or "csv"');
     const s = this.#requireSnapshot();
     const report = buildReport(s, traceForward(s, lotId), this.annotations(), { generatedAt });
     if (format === 'json') return reportToJson(report);
@@ -143,8 +153,8 @@ const SESSION_RE = /^[A-Za-z0-9_-]{8,64}$/;
 export class WorkspaceRegistry {
   #sessions = new Map();
   #opts;
-  constructor(opts = {}) {
-    this.#opts = opts;
+  constructor(opts) {
+    this.#opts = optionsObject(opts, 'registry options');
   }
   get(sessionId) {
     if (typeof sessionId !== 'string' || !SESSION_RE.test(sessionId)) {
