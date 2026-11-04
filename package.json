@@ -7,6 +7,9 @@
   "main": "src/index.js",
   "engines": { "node": ">=20" },
   "scripts": {
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "test:audit": "node --test audit/independent.test.mjs",
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs"
   }
 }

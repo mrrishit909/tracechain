@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TraceChain — synthetic lot lineage review</title>
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="landing.js"></script>
+</head>
+<body class="landing">
+<a class="skip" href="#main">Skip to content</a>
+<p class="synthetic-banner" role="note">SYNTHETIC DEMO DATA — fictional lots, facilities and customers. Not a recall tool, safety certification or FDA/FSMA determination.</p>
+<header class="masthead">
+  <p class="wordmark">TraceChain</p>
+</header>
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <p class="lot-tag" id="lot-tag" aria-hidden="true">LOT · —</p>
+    <h1 id="hero-title">Follow one lot through every cut, blend and shipment.</h1>
+    <p class="lede">TraceChain reviews a synthetic batch of receipts, transformations and shipments, then shows which customers an affected lot reached — with every contributing path and the source row behind each event.</p>
+    <p><a class="primary-action" href="workspace.html#trace">Open the forward-trace workflow</a></p>
+  </section>
+  <section class="proof" aria-labelledby="proof-title">
+    <h2 id="proof-title">Live engine proof on sample TC-SYN-001</h2>
+    <div id="proof" aria-live="polite"><p class="loading">Running the engine on the bundled synthetic sample…</p></div>
+  </section>
+  <section class="scope" aria-labelledby="scope-title">
+    <h2 id="scope-title">What a report does and does not say</h2>
+    <ul>
+      <li>Units are integer grams. Configured process loss is explicit per transformation.</li>
+      <li>Mixed inputs propagate conservatively: every descendant lot is treated as wholly affected.</li>
+      <li>Rejected imports never produce a partial graph; the prior accepted batch stays, labeled.</li>
+      <li>Customers absent from a report are not certified safe. No notifications are sent.</li>
+    </ul>
+  </section>
+</main>
+<footer class="foot"><p>Static demo. Runs entirely in your browser; nothing is uploaded.</p></footer>
+</body>
+</html>

@@ -1,6 +1,6 @@
 // Relationship, lineage, ordering and inventory-ledger validation. Produces an immutable snapshot only
 // when the whole candidate batch is valid (atomic acceptance).
-import { createHash } from 'node:crypto';
+import { sha256Hex } from './sha256.js';
 import {
   LIMITS, SCHEMA_VERSION, RULE_VERSION, SYNTHETIC_LABEL, DISCLAIMER, UNIT,
   TraceChainError, checkedAdd, checkedSub, deepFreeze,
@@ -317,7 +317,7 @@ export function validateCandidate(c) {
     },
   };
   if (!body.inventory.conservationHolds) throw new TraceChainError('INTERNAL', 'Inventory conservation failed');
-  body.contentHash = `sha256:${createHash('sha256').update(canonicalJson(stripSourceRows(body))).digest('hex')}`;
+  body.contentHash = `sha256:${sha256Hex(canonicalJson(stripSourceRows(body)))}`;
   deepFreeze(body);
   ACCEPTED.add(body);
   return { ok: true, snapshot: body };

@@ -7,13 +7,33 @@
 Dependency-free ESM JavaScript (Node >= 20) implementing the TraceChain v1 lot-lineage engine:
 strict JSON/UTF-8 CSV import, integer-gram validation, atomic batch acceptance into immutable snapshots,
 forward/backward traces with every contributing path, reviewer annotations and JSON/CSV report export
-with spreadsheet-formula escaping. There is no frontend, network access, file access or persistence.
+with spreadsheet-formula escaping. The engine itself has no network access, file access or persistence. A static
+browser interface in `web/` calls it directly (see below); there is no backend, auth or persistence.
 
 ## Run the tests
 
 ```sh
 npm test            # = node --test test/*.test.js  (no installs needed)
 ```
+
+## Static browser interface (unverified in a browser)
+
+```sh
+npm run build       # copies an explicit whitelist (web/, src/*.js, fixtures) to dist/ (18 files, 110187 bytes)
+npm run serve       # rebuilds dist/ then serves http://127.0.0.1:8080/  (PORT=… to change; 127.0.0.1 only, GET/HEAD, CSP + nosniff, no dotfiles/traversal)
+```
+
+`dist/index.html` is the landing page. It runs the real engine on the sample and shows the computed affected grams
+and customers, or an explicit failure. `dist/workspace.html` is the review desk. It covers sample JSON/CSV loading,
+UTF-8 file import up to 1 MiB with an explicit format choice, forward and backward traces, customers the trace did
+not reach (not certified safe), event evidence with source rows, search/filter/sort, the missing-T2 challenge
+(built at runtime from the sample), restoring the valid sample, reviewer annotations stored in the in-memory
+workspace, and JSON/CSV downloads. Workflow logic lives in `web/state.js` and is tested in Node
+(`test/web-workflow.test.js`). **No browser, mobile or screen-reader run has happened yet.** See `docs/DESIGN.md`.
+
+The snapshot `contentHash` now comes from `src/sha256.js`, a dependency-free synchronous SHA-256, so the same engine
+runs in browsers. `test/sha256.test.js` checks it against `node:crypto` and checks that the fixture keeps its prior
+hash. This is a content hash, not a signature.
 
 ## Fixture TC-SYN-001
 
