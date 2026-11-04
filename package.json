@@ -1,0 +1,12 @@
+{
+  "name": "tracechain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TraceChain synthetic vertical slice: dependency-free lot lineage engine (SYNTHETIC DATA ONLY, not a compliance tool)",
+  "type": "module",
+  "main": "src/index.js",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test test/"
+  }
+}
