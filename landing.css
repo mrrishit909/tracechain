@@ -1,0 +1,201 @@
+/* TraceChain landing: a printed warehouse route tag on a pearl control desk. Landing page only;
+   the workspace keeps styles.css. System fonts only, no external assets. */
+:root {
+  --pearl: #eef1f5;      /* ground */
+  --paper: #ffffff;      /* the tag */
+  --navy: #14213d;       /* ink, rules, root lot */
+  --cobalt: #1f4fd1;     /* the affected route, primary action, computed figure */
+  --stamp: #a3261b;      /* synthetic stamp and "does not state" markers only */
+  --ink-soft: #3d4a63;
+  --cobalt-tint: #dfe7fb;
+  --rule: #c9d1de;
+  --line-out: #7a869b;   /* graphic only: input outside this trace (3.68:1 on paper) */
+  --sans: "Avenir Next", "Segoe UI", "Helvetica Neue", system-ui, sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --hole: 4.25rem;       /* left margin reserved for the grommet */
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; color: var(--navy); font: 1rem/1.55 var(--sans); overflow-x: hidden;
+  background-color: var(--pearl);
+  /* faint floor-marking grid of a dispatch desk */
+  background-image: linear-gradient(rgba(20, 33, 61, 0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(20, 33, 61, 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+a { color: var(--cobalt); text-underline-offset: 0.2em; }
+:focus-visible { outline: 3px solid var(--cobalt); outline-offset: 3px; }
+code { font: 0.92em var(--mono); }
+.wrap { max-width: 78rem; margin-inline: auto; padding-inline: clamp(1rem, 3vw, 2.5rem); }
+
+.skip { position: absolute; left: -999px; top: 0; background: var(--navy); color: #fff; padding: 0.5rem 1rem; z-index: 2; }
+.skip:focus { left: 0.5rem; }
+.synthetic-banner { margin: 0; background: var(--navy); color: #fff; font: 600 0.78rem/1.4 var(--mono); letter-spacing: 0.04em; padding: 0.5rem 1rem; text-align: center; }
+
+/* Masthead */
+.masthead { display: flex; align-items: baseline; gap: 1rem; padding-block: 1.1rem; border-bottom: 1px solid var(--rule); }
+.wordmark { margin: 0; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.wordmark::before { content: ""; display: inline-block; width: 0.6rem; height: 0.6rem; margin-right: 0.6rem; background: var(--cobalt); border-radius: 50%; box-shadow: 0 0 0 3px var(--pearl), 0 0 0 5px var(--navy); }
+.desk { margin: 0; color: var(--ink-soft); font: 0.8rem var(--mono); }
+.mast-link { margin-left: auto; font-weight: 600; text-decoration: none; padding: 0.35rem 0; }
+.mast-link:hover { text-decoration: underline; }
+
+/* Hero */
+.hero { display: grid; gap: 1.25rem 3rem; padding-block: clamp(2rem, 5vw, 3.75rem) clamp(1.5rem, 3vw, 2.5rem); align-items: end; }
+.eyebrow { margin: 0 0 0.75rem; font: 600 0.75rem/1.3 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--cobalt); }
+h1 { margin: 0; font-size: clamp(2.25rem, 4.6vw, 4.25rem); line-height: 1.02; letter-spacing: -0.028em; font-weight: 600; max-width: 15ch; text-wrap: balance; }
+h2 { margin: 0; font-size: clamp(1.4rem, 2.2vw, 1.75rem); line-height: 1.15; letter-spacing: -0.015em; font-weight: 600; }
+h3 { margin: 0 0 0.6rem; font: 600 0.75rem/1.3 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+.lede { margin: 0 0 1.4rem; font-size: 1.15rem; line-height: 1.5; color: var(--ink-soft); max-width: 44ch; }
+.actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem; margin: 0; }
+.primary-action { display: inline-flex; align-items: center; justify-content: center; gap: 0.6rem; min-height: 3rem; background: var(--cobalt); color: #fff; padding: 0.8rem 1.35rem; border-radius: 4px; text-decoration: none; font-weight: 600; }
+.primary-action:hover { background: var(--navy); }
+.primary-action span { display: inline-block; }
+.secondary-action { font-weight: 600; padding: 0.4rem 0; }
+
+/* The tag: paper, navy border, punched grommet, perforated stub */
+.tag {
+  position: relative; display: grid; grid-template-columns: minmax(0, 1fr);
+  background: var(--paper); border: 2px solid var(--navy); border-radius: 22px 8px 8px 22px;
+  box-shadow: 0 1px 0 var(--rule), 0 18px 40px -28px rgba(20, 33, 61, 0.45);
+  padding-left: var(--hole); scroll-margin-top: 1rem;
+}
+.tag::before { /* grommet hole */
+  content: ""; position: absolute; left: 1.35rem; top: 50%; width: 1.4rem; height: 1.4rem; margin-top: -0.7rem;
+  border-radius: 50%; background: var(--pearl); border: 3px solid var(--navy); box-shadow: 0 0 0 5px var(--paper), 0 0 0 7px var(--rule);
+}
+.tag-body { display: grid; grid-template-columns: minmax(0, 1fr); min-width: 0; padding: 1.75rem 2rem 1.75rem 0; gap: 1.5rem; }
+.tag-head { display: grid; gap: 0.5rem; justify-items: start; }
+.tag-kicker, .stub-kicker { margin: 0; font: 600 0.72rem/1.3 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-soft); }
+.lot-tag { margin: 0.25rem 0 0; font: 700 0.8rem/1 var(--mono); letter-spacing: 0.12em; color: var(--navy); border: 2px solid var(--navy); border-radius: 3px; padding: 0.45rem 0.7rem; background: var(--cobalt-tint); }
+
+.route { margin: 0; min-width: 0; }
+.route svg { display: block; width: 100%; height: auto; overflow: visible; }
+.route .route-h { display: none; }
+figcaption { margin-top: 0.9rem; font-size: 0.85rem; color: var(--ink-soft); max-width: 70ch; }
+.key { display: inline-block; width: 1.6rem; height: 0; vertical-align: middle; margin: 0 0.3rem 0 0.4rem; border-top: 3px solid var(--cobalt); }
+.key:first-child { margin-left: 0; }
+.key-out { border-top: 2px dashed var(--line-out); }
+
+/* SVG ink */
+.rl { fill: none; stroke: var(--cobalt); stroke-width: 3.5; stroke-linecap: round; stroke-linejoin: round; }
+.rl-out { fill: none; stroke: var(--line-out); stroke-width: 2; stroke-dasharray: 6 6; }
+.chip rect { fill: var(--cobalt-tint); stroke: var(--cobalt); stroke-width: 2; }
+.chip.root rect { fill: var(--navy); stroke: var(--navy); }
+.chip.out rect { fill: var(--paper); stroke: var(--line-out); stroke-dasharray: 5 4; }
+.chip.cust rect { fill: var(--paper); stroke: var(--navy); stroke-width: 2.5; }
+.proc circle { fill: var(--paper); stroke: var(--navy); stroke-width: 2.5; }
+.route text { font-family: var(--mono); fill: var(--navy); }
+.route .t-id { font-size: 14px; font-weight: 700; }
+.route .t-sub { font-size: 12px; fill: var(--ink-soft); }
+.route .t-note { font-size: 11px; font-weight: 600; fill: var(--cobalt); }
+.route .root text { fill: #fff; }
+.route .root .t-sub { fill: var(--cobalt-tint); }
+.route .out text { fill: var(--ink-soft); }
+.route .t-proc { font-size: 12px; font-weight: 700; text-anchor: middle; }
+.route .t-label { font: 600 12px var(--sans); fill: var(--ink-soft); text-anchor: middle; }
+.pill rect { fill: var(--paper); stroke: var(--cobalt); stroke-width: 1.5; }
+.route .pill text { font-size: 12.5px; font-weight: 600; fill: var(--cobalt); text-anchor: middle; }
+.route .mid { text-anchor: middle; }
+.route .start { text-anchor: start; }
+
+/* Ledger: the text equivalent, printed small like tag fine print */
+.legs { border-top: 1px solid var(--rule); padding-top: 1.1rem; min-width: 0; }
+.ledger { list-style: none; margin: 0; padding: 0; }
+.ledger li { display: grid; grid-template-columns: 3rem minmax(0, 12rem) minmax(0, 1fr); gap: 0.15rem 1rem; padding: 0.45rem 0; border-bottom: 1px dashed var(--rule); font-size: 0.88rem; }
+.leg-id { font: 700 0.85rem var(--mono); color: var(--cobalt); }
+.leg-when { font: 0.8rem var(--mono); color: var(--ink-soft); }
+.leg-what { overflow-wrap: anywhere; }
+
+/* Stub: perforated tear-off holding the live engine output from landing.js */
+.stub { position: relative; min-width: 0; padding: 1.75rem 1.75rem 2rem; border-left: 2px dashed var(--rule); display: flex; flex-direction: column; gap: 0.75rem; }
+.stub::before, .stub::after { /* perforation notches, half-clipped so they bite into the tag's top and bottom edge */
+  content: ""; position: absolute; left: -15px; width: 28px; height: 28px; border-radius: 50%; background: var(--pearl); border: 2px solid var(--navy); box-sizing: border-box;
+}
+.stub::before { top: -15px; clip-path: inset(12px 0 0 0); }
+.stub::after { bottom: -15px; clip-path: inset(0 0 12px 0); }
+.stub h2 { font-size: 1.15rem; }
+#proof { display: flex; flex-direction: column; gap: 0.7rem; }
+#proof p { margin: 0; }
+.proof-label { font-size: 0.8rem; color: var(--ink-soft); }
+.proof-figure { display: grid; gap: 0.35rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--navy); }
+.proof-figure .num { font-size: clamp(3rem, 5.4vw, 4.6rem); line-height: 0.95; font-weight: 700; letter-spacing: -0.035em; color: var(--cobalt); font-variant-numeric: tabular-nums; }
+.proof-figure .unit { font-size: 0.95rem; font-weight: 600; color: var(--navy); line-height: 1.35; }
+.proof-customers { list-style: none; margin: 0; padding: 0; }
+.proof-customers li { position: relative; font: 0.85rem/1.4 var(--mono); padding: 0.55rem 0 0.55rem 1.1rem; border-bottom: 1px dashed var(--rule); overflow-wrap: anywhere; }
+.proof-customers li::before { content: ""; position: absolute; left: 0; top: 0.95rem; width: 0.5rem; height: 0.5rem; border-radius: 50%; background: var(--cobalt); }
+.proof-note { font-size: 0.85rem; color: var(--ink-soft); }
+.loading { color: var(--ink-soft); font-style: italic; }
+.error { color: var(--stamp); font-weight: 600; }
+.stamp { margin: auto 0 0; align-self: flex-start; transform: rotate(-4deg); font: 700 0.72rem/1 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--stamp); border: 2px solid var(--stamp); border-radius: 3px; padding: 0.45rem 0.6rem; }
+
+/* Reverse of the tag */
+.scope { margin-top: clamp(2.5rem, 6vw, 4.5rem); padding-top: 1.5rem; border-top: 3px solid var(--navy); }
+.scope h2 { margin-bottom: 1.5rem; }
+.scope-cols { display: grid; gap: 1.5rem 3rem; }
+.says, .says-not { list-style: none; margin: 0; padding: 0; }
+.says li, .says-not li { position: relative; padding: 0.6rem 0 0.6rem 1.5rem; border-top: 1px solid var(--rule); max-width: 52ch; }
+.says li::before, .says-not li::before { content: ""; position: absolute; left: 0; top: 1.05rem; width: 0.6rem; height: 0.6rem; }
+.says li::before { background: var(--cobalt); }
+.says-not li::before { width: 0.5rem; height: 0.5rem; border: 2px solid var(--stamp); transform: rotate(45deg); }
+.scope-cta { margin: 2rem 0 0; }
+.foot { color: var(--ink-soft); font-size: 0.85rem; padding-block: 2.5rem; }
+.foot p { margin: 0; border-top: 1px solid var(--rule); padding-top: 1rem; }
+
+/* Desktop: horizontal route; the stub spans the tag's full height on the right */
+@media (min-width: 60rem) {
+  .hero { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+  .tag { grid-template-columns: minmax(0, 1fr) 18.5rem; }
+  .route .route-h { display: block; }
+  .route .route-v { display: none; }
+}
+/* Tablet: vertical route beside the ledger; the stub tears off along the bottom */
+@media (min-width: 40rem) and (max-width: 59.99rem) {
+  .tag-body { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "head head" "route legs"; column-gap: 2rem; }
+  .tag-head { grid-area: head; } .route { grid-area: route; } .legs { grid-area: legs; align-self: start; }
+  .route .route-v { max-width: 22rem; }
+  .stub { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.75rem 2rem; align-items: start;
+    border-left: 0; border-top: 2px dashed var(--rule); margin-left: calc(-1 * var(--hole)); padding: 1.75rem 2rem 2rem var(--hole); }
+  .stub > .stub-kicker, .stub > h2 { grid-column: 1; }
+  .stub > #proof { grid-column: 2; grid-row: 1 / span 3; }
+  .stub > .stamp { grid-column: 1; margin-top: 0.75rem; }
+}
+/* Phone and tablet share the compact ledger and drop the edge notches */
+@media (max-width: 59.99rem) {
+  .stub::before, .stub::after { display: none; }
+  .ledger li { grid-template-columns: 2.75rem minmax(0, 1fr); }
+  .leg-what { grid-column: 2; }
+}
+/* Phone: the tag hangs vertically, hole at the top, stub tears off below */
+@media (max-width: 39.99rem) {
+  .masthead { flex-wrap: wrap; gap: 0.25rem 1rem; }
+  .desk { order: 3; flex-basis: 100%; }
+  .actions { flex-direction: column; align-items: stretch; }
+  .secondary-action { align-self: center; }
+  .tag { padding-left: 0; padding-top: 3rem; border-radius: 22px 22px 8px 8px; }
+  .tag::before { left: 50%; top: 1rem; margin: 0 0 0 -0.7rem; }
+  .tag-body { padding: 0.5rem 1.1rem 1.5rem; }
+  .route .route-v { max-width: 24rem; margin-inline: auto; }
+  .stub { border-left: 0; border-top: 2px dashed var(--rule); padding: 1.5rem 1.1rem 1.75rem; }
+}
+@media (min-width: 48rem) { .scope-cols { grid-template-columns: 1fr 1fr; } }
+
+/* Motion: one load sequence that follows the event order, then the computed result settles in.
+   Everything is fully drawn by default; animation only applies when motion is welcome. */
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+  .rl { stroke-dasharray: 1200; animation: draw 900ms cubic-bezier(0.3, 0.6, 0.2, 1) both; }
+  .chip, .proc, .pill { animation: settle 420ms ease-out both; }
+  .d1 { animation-delay: 150ms; } .d2 { animation-delay: 330ms; } .d3 { animation-delay: 510ms; }
+  .d4 { animation-delay: 690ms; } .d5 { animation-delay: 870ms; } .d6 { animation-delay: 1050ms; }
+  .c1 { animation-delay: 60ms; } .c2 { animation-delay: 380ms; } .c3 { animation-delay: 560ms; }
+  .c4 { animation-delay: 740ms; } .c5 { animation-delay: 1000ms; } .c6 { animation-delay: 1180ms; }
+  #proof > * { animation: rise 480ms ease-out both; }
+  #proof > .proof-customers { animation-delay: 120ms; } #proof > .proof-note { animation-delay: 220ms; }
+  .primary-action { transition: background-color 160ms ease; }
+  .primary-action span { transition: transform 180ms ease; }
+  .primary-action:hover span, .primary-action:focus-visible span { transform: translateX(4px); }
+}
+@keyframes draw { from { stroke-dashoffset: 1200; } to { stroke-dashoffset: 0; } }
+@keyframes settle { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }

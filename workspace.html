@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TraceChain review desk — synthetic data</title>
+<link rel="stylesheet" href="styles.css">
+<script type="module" src="app.js"></script>
+</head>
+<body class="desk">
+<a class="skip" href="#main">Skip to workspace</a>
+<p class="synthetic-banner" role="note">Only the bundled sample TC-SYN-001 is synthetic demo data. Files you import are labeled UNVERIFIED USER-SUPPLIED DATA: TraceChain does not inspect content and cannot detect or prevent real or sensitive data. No customer notifications, real recalls or FDA/FSMA claims. Customers absent from a report are NOT certified safe.</p>
+<header class="masthead"><a class="wordmark" href="index.html">TraceChain</a><span class="desk-name">Review desk</span></header>
+<main id="main">
+  <h1>Lot lineage review</h1>
+  <section id="import" aria-labelledby="import-title" class="panel">
+    <h2 id="import-title">1 · Load a batch</h2>
+    <div class="actions">
+      <button type="button" data-sample="json">Load sample TC-SYN-001 (JSON)</button>
+      <button type="button" data-sample="csv">Load sample TC-SYN-001 (CSV)</button>
+      <button type="button" id="challenge">Import challenge: T2 missing</button>
+    </div>
+    <form id="file-form" class="file-form">
+      <fieldset><legend>Import your own UTF-8 file (max 1 MiB)</legend>
+        <p class="note">Imported files are always labeled UNVERIFIED USER-SUPPLIED DATA, even if they declare synthetic: true or are named like the sample. Their content is not inspected; do not import real or sensitive data.</p>
+        <label><input type="radio" name="fmt" value="json" checked> JSON</label>
+        <label><input type="radio" name="fmt" value="csv"> CSV</label>
+        <label for="file">File</label> <input id="file" type="file" accept=".json,.csv,application/json,text/csv">
+        <button type="submit">Import file</button>
+      </fieldset>
+    </form>
+    <div id="import-status" role="status" aria-live="polite"><p class="empty">No batch loaded yet. Load the sample to begin.</p></div>
+  </section>
+  <section id="trace" aria-labelledby="trace-title" class="panel">
+    <h2 id="trace-title">2 · Forward trace from an affected lot</h2>
+    <label for="lot-select">Affected input lot</label> <select id="lot-select" disabled></select>
+    <div id="trace-out" aria-live="polite"><p class="empty">Accepted snapshot required.</p></div>
+  </section>
+  <section id="backward" aria-labelledby="back-title" class="panel">
+    <h2 id="back-title">3 · Backward trace a target lot</h2>
+    <label for="back-select">Target lot</label> <select id="back-select" disabled></select>
+    <div id="back-out" aria-live="polite"><p class="empty">Accepted snapshot required.</p></div>
+  </section>
+  <section id="evidence" aria-labelledby="ev-title" class="panel">
+    <h2 id="ev-title">4 · Event evidence</h2>
+    <label for="ev-select">Event</label> <select id="ev-select" disabled></select>
+    <div id="ev-out" aria-live="polite"><p class="empty">Accepted snapshot required.</p></div>
+  </section>
+  <section id="records" aria-labelledby="rec-title" class="panel">
+    <h2 id="rec-title">5 · Search records</h2>
+    <form id="query" class="query">
+      <label for="q-coll">Collection</label>
+      <select id="q-coll"><option>events</option><option>lots</option><option>shipments</option><option>receipts</option><option>customers</option></select>
+      <label for="q-search">Search</label> <input id="q-search" type="search" maxlength="256">
+      <label for="q-field">Filter field</label>
+      <select id="q-field"><option value="">none</option><option>type</option><option>customerId</option><option>lotId</option><option>facilityId</option></select>
+      <label for="q-value">Filter value (exact)</label> <input id="q-value" type="text" maxlength="64">
+      <label for="q-sort">Sort by</label> <input id="q-sort" type="text" placeholder="e.g. timestamp" maxlength="64">
+      <label for="q-dir">Direction</label> <select id="q-dir"><option value="asc">ascending</option><option value="desc">descending</option></select>
+      <button type="submit">Apply</button>
+    </form>
+    <div id="rec-out"><p class="empty">Accepted snapshot required.</p></div>
+  </section>
+  <section id="review" aria-labelledby="rv-title" class="panel">
+    <h2 id="rv-title">6 · Reviewer annotation and report</h2>
+    <form id="ann-form" class="ann">
+      <label for="ann-reviewer">Reviewer ID</label> <input id="ann-reviewer" value="QA-REVIEWER-1" maxlength="64" required>
+      <label for="ann-type">Target type</label> <select id="ann-type"><option>event</option><option>lot</option><option>customer</option></select>
+      <label for="ann-target">Target ID</label> <input id="ann-target" value="T2" maxlength="64" required>
+      <label for="ann-note">Note</label> <textarea id="ann-note" maxlength="2000" required></textarea>
+      <button type="submit">Add annotation</button>
+    </form>
+    <div id="ann-out" aria-live="polite"><p class="empty">No annotations in this workspace.</p></div>
+    <div class="actions"><button type="button" data-export="json">Download report JSON</button><button type="button" data-export="csv">Download report CSV</button></div>
+    <p id="export-status" role="status"></p>
+  </section>
+</main>
+</body>
+</html>
