@@ -3,37 +3,153 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TraceChain — synthetic lot lineage review</title>
-<link rel="stylesheet" href="styles.css">
+<meta name="description" content="TraceChain traces one synthetic lot forward through cuts, blends and shipments, computed in your browser from bundled synthetic sample TC-SYN-001.">
+<meta name="theme-color" content="#eef1f5">
+<title>TraceChain · synthetic lot lineage review</title>
+<link rel="stylesheet" href="landing.css">
 <script type="module" src="landing.js"></script>
 </head>
 <body class="landing">
 <a class="skip" href="#main">Skip to content</a>
-<p class="synthetic-banner" role="note">SYNTHETIC DEMO DATA — fictional lots, facilities and customers. Not a recall tool, safety certification or FDA/FSMA determination.</p>
-<header class="masthead">
+<p class="synthetic-banner" role="note">SYNTHETIC DEMO DATA: fictional lots, facilities and customers. Not a recall tool, safety certification or FDA/FSMA determination.</p>
+<header class="masthead wrap">
   <p class="wordmark">TraceChain</p>
+  <p class="desk">Forward-trace review desk</p>
+  <a class="mast-link" href="workspace.html#trace">Workspace</a>
 </header>
-<main id="main">
+<main id="main" class="wrap">
   <section class="hero" aria-labelledby="hero-title">
-    <p class="lot-tag" id="lot-tag" aria-hidden="true">LOT · —</p>
-    <h1 id="hero-title">Follow one lot through every cut, blend and shipment.</h1>
-    <p class="lede">TraceChain reviews a synthetic batch of receipts, transformations and shipments, then shows which customers an affected lot reached — with every contributing path and the source row behind each event.</p>
-    <p><a class="primary-action" href="workspace.html#trace">Open the forward-trace workflow</a></p>
+    <div class="hero-head">
+      <p class="eyebrow">Forward trace · batch TC-SYN-001 · synthetic</p>
+      <h1 id="hero-title">Follow one lot through every cut, blend and shipment.</h1>
+    </div>
+    <div class="hero-side">
+      <p class="lede">TraceChain reviews a synthetic batch of receipts, transformations and shipments, then shows which customers an affected lot reached, with every contributing path and the source row behind each event.</p>
+      <p class="actions">
+        <a class="primary-action" href="workspace.html#trace">Open the forward-trace workflow <span aria-hidden="true">&rarr;</span></a>
+        <a class="secondary-action" href="#route">Read lot A's route tag</a>
+      </p>
+    </div>
   </section>
-  <section class="proof" aria-labelledby="proof-title">
-    <h2 id="proof-title">Live engine proof on sample TC-SYN-001</h2>
-    <div id="proof" aria-live="polite"><p class="loading">Running the engine on the bundled synthetic sample…</p></div>
-  </section>
+
+  <div class="tag" id="route">
+    <section class="tag-body" aria-labelledby="route-title">
+      <header class="tag-head">
+        <p class="tag-kicker">Route tag · input lot A · TC-SYN-001</p>
+        <h2 id="route-title">Where lot A went, leg by leg</h2>
+        <p class="lot-tag" id="lot-tag" aria-hidden="true">LOT · pending</p>
+      </header>
+
+      <figure class="route">
+        <svg class="route-h" viewBox="0 0 960 330" role="img" aria-labelledby="rh-title rh-desc">
+          <title id="rh-title">Forward route of synthetic lot A, batch TC-SYN-001</title>
+          <desc id="rh-desc">Lot A, 100,000 g received, is cut at T1 into A1, 60,000 g, and A2, 40,000 g. A1 ships 20,000 g to customer C1 in shipment S1. A2 is blended at T2 with 20,000 g of lot B, which sits outside this trace, into lot M, 60,000 g; all of lot M is treated as affected. M ships 30,000 g to C2 in S2 and 10,000 g to C1 in S5. The route ledger lists the same legs as text.</desc>
+          <g class="lines">
+            <path class="rl d1" d="M160 198 H204"/>
+            <path class="rl d2" d="M220 182 V108 Q220 84 244 84 H300"/>
+            <path class="rl d2" d="M236 198 H300"/>
+            <path class="rl d3" d="M424 198 H484"/>
+            <path class="rl-out" d="M500 262 V214"/>
+            <path class="rl d4" d="M516 198 H570"/>
+            <path class="rl d5" d="M424 84 H860"/>
+            <path class="rl d5" d="M720 198 H860"/>
+            <path class="rl d6" d="M650 162 V140 Q650 128 662 128 H894 Q906 128 906 116 V108"/>
+          </g>
+          <g class="chip root c1"><rect x="20" y="168" width="140" height="60" rx="6"/><text class="t-id" x="36" y="193">LOT A</text><text class="t-sub" x="36" y="214">100,000 g · R-A</text></g>
+          <g class="proc c2"><circle cx="220" cy="198" r="16"/><text class="t-proc" x="220" y="202">T1</text><text class="t-label" x="220" y="236">cut</text></g>
+          <g class="chip c2"><rect x="300" y="60" width="124" height="48" rx="6"/><text class="t-id" x="316" y="81">A1</text><text class="t-sub" x="316" y="99">60,000 g cut</text></g>
+          <g class="chip c2"><rect x="300" y="174" width="124" height="48" rx="6"/><text class="t-id" x="316" y="195">A2</text><text class="t-sub" x="316" y="213">40,000 g cut</text></g>
+          <g class="proc c3"><circle cx="500" cy="198" r="16"/><text class="t-proc" x="500" y="202">T2</text><text class="t-label" x="500" y="170">blend</text></g>
+          <g class="chip out c3"><rect x="416" y="262" width="168" height="48" rx="6"/><text class="t-id" x="432" y="283">B · outside trace</text><text class="t-sub" x="432" y="301">20,000 g into T2</text></g>
+          <g class="chip c4"><rect x="570" y="162" width="150" height="72" rx="6"/><text class="t-id" x="586" y="186">LOT M</text><text class="t-sub" x="586" y="206">60,000 g blend</text><text class="t-note" x="586" y="224">all of M affected</text></g>
+          <g class="pill c5"><rect x="574" y="72" width="116" height="24" rx="12"/><text x="632" y="89">S1 · 20,000 g</text></g>
+          <g class="pill c5"><rect x="732" y="186" width="116" height="24" rx="12"/><text x="790" y="203">S2 · 30,000 g</text></g>
+          <g class="pill c6"><rect x="720" y="116" width="116" height="24" rx="12"/><text x="778" y="133">S5 · 10,000 g</text></g>
+          <g class="chip cust c5"><rect x="860" y="60" width="92" height="48" rx="24"/><text class="t-id mid" x="906" y="81">C1</text><text class="t-sub mid" x="906" y="99">S1 + S5</text></g>
+          <g class="chip cust c5"><rect x="860" y="174" width="92" height="48" rx="24"/><text class="t-id mid" x="906" y="195">C2</text><text class="t-sub mid" x="906" y="213">S2</text></g>
+        </svg>
+
+        <svg class="route-v" viewBox="0 0 380 590" role="img" aria-labelledby="rv-title rv-desc">
+          <title id="rv-title">Forward route of synthetic lot A, batch TC-SYN-001</title>
+          <desc id="rv-desc">Lot A, 100,000 g received, is cut at T1 into A1, 60,000 g, and A2, 40,000 g. A1 ships 20,000 g to customer C1 in shipment S1. A2 is blended at T2 with 20,000 g of lot B, which sits outside this trace, into lot M, 60,000 g; all of lot M is treated as affected. M ships 30,000 g to C2 in S2 and 10,000 g to C1 in S5. The route ledger lists the same legs as text.</desc>
+          <g class="lines">
+            <path class="rl d1" d="M190 72 V104"/>
+            <path class="rl d2" d="M190 136 V144 Q190 152 182 152 H97 Q85 152 85 164 V168"/>
+            <path class="rl d2" d="M190 136 V144 Q190 152 198 152 H278 Q290 152 290 164 V168"/>
+            <path class="rl d3" d="M290 216 V252"/>
+            <path class="rl-out" d="M240 268 H274"/>
+            <path class="rl d4" d="M290 284 V304"/>
+            <path class="rl d5" d="M85 216 V520"/>
+            <path class="rl d5" d="M290 368 V520"/>
+            <path class="rl d6" d="M220 336 H190 Q178 336 178 348 V534 Q178 546 166 546 H150"/>
+          </g>
+          <g class="chip root c1"><rect x="100" y="16" width="180" height="56" rx="6"/><text class="t-id mid" x="190" y="40">LOT A</text><text class="t-sub mid" x="190" y="60">100,000 g · R-A</text></g>
+          <g class="proc c2"><circle cx="190" cy="120" r="16"/><text class="t-proc" x="190" y="124">T1</text><text class="t-label start" x="214" y="124">cut</text></g>
+          <g class="chip c2"><rect x="20" y="168" width="130" height="48" rx="6"/><text class="t-id mid" x="85" y="188">A1</text><text class="t-sub mid" x="85" y="206">60,000 g cut</text></g>
+          <g class="chip c2"><rect x="220" y="168" width="140" height="48" rx="6"/><text class="t-id mid" x="290" y="188">A2</text><text class="t-sub mid" x="290" y="206">40,000 g cut</text></g>
+          <g class="proc c3"><circle cx="290" cy="268" r="16"/><text class="t-proc" x="290" y="272">T2</text><text class="t-label start" x="314" y="272">blend</text></g>
+          <g class="chip out c3"><rect x="104" y="246" width="136" height="44" rx="6"/><text class="t-id mid" x="172" y="265">B · outside</text><text class="t-sub mid" x="172" y="281">20,000 g in</text></g>
+          <g class="chip c4"><rect x="220" y="304" width="140" height="64" rx="6"/><text class="t-id mid" x="290" y="326">LOT M</text><text class="t-sub mid" x="290" y="344">60,000 g blend</text><text class="t-note mid" x="290" y="360">all of M affected</text></g>
+          <g class="pill c5"><rect x="27" y="388" width="116" height="24" rx="12"/><text x="85" y="405">S1 · 20,000 g</text></g>
+          <g class="pill c5"><rect x="232" y="408" width="116" height="24" rx="12"/><text x="290" y="425">S2 · 30,000 g</text></g>
+          <g class="pill c6"><rect x="120" y="448" width="116" height="24" rx="12"/><text x="178" y="465">S5 · 10,000 g</text></g>
+          <g class="chip cust c5"><rect x="20" y="520" width="130" height="52" rx="26"/><text class="t-id mid" x="85" y="542">C1</text><text class="t-sub mid" x="85" y="560">S1 + S5</text></g>
+          <g class="chip cust c5"><rect x="220" y="520" width="140" height="52" rx="26"/><text class="t-id mid" x="290" y="542">C2</text><text class="t-sub mid" x="290" y="560">S2</text></g>
+        </svg>
+        <figcaption>
+          <span class="key key-route" aria-hidden="true"></span> affected route
+          <span class="key key-out" aria-hidden="true"></span> input outside this trace.
+          Lot sizes and legs transcribed from <code>fixtures/TC-SYN-001.json</code>; the affected total is computed live on the stub.
+        </figcaption>
+      </figure>
+
+      <div class="legs">
+        <h3 id="legs-title">Route ledger, in event order</h3>
+        <ol class="ledger" role="list" aria-labelledby="legs-title">
+          <li><span class="leg-id">R-A</span><span class="leg-when">2026-01-05 · FAC-SYN-1</span><span class="leg-what">Lot A received, 100,000 g.</span></li>
+          <li><span class="leg-id">T1</span><span class="leg-when">2026-01-06 · FAC-SYN-2</span><span class="leg-what">Cut A into A1 60,000 g and A2 40,000 g; configured loss 0 g.</span></li>
+          <li><span class="leg-id">T2</span><span class="leg-when">2026-01-07 · FAC-SYN-2</span><span class="leg-what">Blend A2 40,000 g with B 20,000 g into M 60,000 g. Mixing is conservative: all of M is treated as affected.</span></li>
+          <li><span class="leg-id">S1</span><span class="leg-when">2026-01-08 · FAC-SYN-3</span><span class="leg-what">A1, 20,000 g shipped to C1.</span></li>
+          <li><span class="leg-id">S2</span><span class="leg-when">2026-01-08 · FAC-SYN-3</span><span class="leg-what">M, 30,000 g shipped to C2.</span></li>
+          <li><span class="leg-id">S5</span><span class="leg-when">2026-01-09 · FAC-SYN-3</span><span class="leg-what">M, 10,000 g shipped to C1.</span></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="stub" aria-labelledby="proof-title">
+      <p class="stub-kicker">Tear-off · computed result</p>
+      <h2 id="proof-title">Live engine proof on sample TC-SYN-001</h2>
+      <div id="proof" aria-live="polite"><p class="loading">Running the engine on the bundled synthetic sample…</p></div>
+      <p class="stamp">Synthetic · not a recall</p>
+    </section>
+  </div>
+
   <section class="scope" aria-labelledby="scope-title">
+    <p class="eyebrow">Reverse of the tag</p>
     <h2 id="scope-title">What a report does and does not say</h2>
-    <ul>
-      <li>Units are integer grams. Configured process loss is explicit per transformation.</li>
-      <li>Mixed inputs propagate conservatively: every descendant lot is treated as wholly affected.</li>
-      <li>Rejected imports never produce a partial graph; the prior accepted batch stays, labeled.</li>
-      <li>Customers absent from a report are not certified safe. No notifications are sent.</li>
-    </ul>
+    <div class="scope-cols">
+      <div>
+        <h3>It states</h3>
+        <ul class="says">
+          <li>Units are integer grams. Configured process loss is explicit per transformation.</li>
+          <li>Mixed inputs propagate conservatively: every descendant lot is treated as wholly affected.</li>
+          <li>Every contributing path, with the source row behind each event.</li>
+          <li>Rejected imports never produce a partial graph; the prior accepted batch stays, labeled.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>It does not state</h3>
+        <ul class="says-not">
+          <li>Any contamination probability or affected share of a blend. Lots are flagged whole.</li>
+          <li>That customers absent from a report are safe. They are outside the trace, not certified. No notifications are sent.</li>
+          <li>Any recall, safety, FDA or FSMA determination. No regulatory rule mapping is done.</li>
+          <li>Anything about real customers, facilities or datasets. Every record here is synthetic and fictional.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="scope-cta"><a class="primary-action" href="workspace.html#trace">Open the forward-trace workflow <span aria-hidden="true">&rarr;</span></a></p>
   </section>
 </main>
-<footer class="foot"><p>Static demo. Runs entirely in your browser; nothing is uploaded.</p></footer>
+<footer class="foot wrap"><p>Static demo. Runs entirely in your browser; nothing is uploaded.</p></footer>
 </body>
 </html>

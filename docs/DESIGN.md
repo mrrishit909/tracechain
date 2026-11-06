@@ -1,5 +1,10 @@
 # TraceChain static interface: design plan (SYNTHETIC DATA ONLY)
 
+> **Update:** the landing page has been redesigned as a printed route tag. Its tokens, layout, three
+> compositions, motion and rubric evidence are in
+> [`design/TRACECHAIN-DESIGN-DECISION.md`](design/TRACECHAIN-DESIGN-DECISION.md). That document supersedes the
+> landing bullets below. This file still governs the workspace (`workspace.html`, `styles.css`).
+
 Skills consulted under the hard time stop. The website-playbook `SKILL.md` was **not read**: the one attempt was
 blocked by a permission prompt. Of `references/quality-rubric.md`, only the first 40 lines were read: the grading
 rules and criteria 1–2. Of `references/motion-and-assets.md`, only the first 25 lines were read; no generated media is
@@ -41,20 +46,22 @@ Scale: h1 `clamp(1.9rem, 5vw, 3.2rem)` at -0.02em tracking. The proof figure is 
 1.25rem, body is 1rem/1.55, and table and route text is 0.9rem.
 
 ## Composition
-- **Landing:** synthetic banner, wordmark, lot tag, a large headline, the primary action ("Open the forward-trace
-  workflow" goes to `workspace.html#trace`), a live engine proof, and a scope list. There are no metric cards and no
-  sidebar.
+- **Landing (superseded):** previously a synthetic banner, lot tag, headline, primary action, live engine proof and
+  scope list. It is now the route-tag composition in `design/TRACECHAIN-DESIGN-DECISION.md`, which uses its own
+  `web/landing.css`.
 - **Workspace:** a single column of six numbered route panels (load, forward, backward, evidence, search, annotate and
   export) with a cobalt left rail.
 - **Mobile at 390px:** the same single column. Form grids collapse to one column below 40rem. Tables sit in
   `overflow-x:auto` wrappers. Hashes and paths use `overflow-wrap:anywhere`, and the body uses `overflow-x:hidden`
   as a backstop.
 - **Diagram:** this build ships the accessible route list (`<ol class="routes">`, path text plus grams) as the
-  diagram. A graphical SVG route schematic was cut for time.
+  diagram. A graphical SVG route schematic was cut for time *in the workspace*. The landing page now has an
+  inline SVG route schematic of lot A plus a text ledger (see the decision doc).
 - **Motion:** only colour transitions (160ms), applied only under `prefers-reduced-motion: no-preference`.
 
 ## Rubric status (website-playbook)
 None of the visual criteria has been inspected in a rendered browser. No browser or Playwright run happened in this
 session. **All eight rubric criteria are Unverified.** A Playwright or manual browser pass would settle them: desktop
-and 390x844 screenshots plus keyboard and screen-reader checks. The graphical SVG route schematic is **not
-implemented**. Only the accessible route list exists.
+and 390x844 screenshots plus keyboard and screen-reader checks. In the workspace, the graphical SVG route
+schematic is still **not implemented**; only the accessible route list exists. Landing-page rubric status is
+tracked in the decision doc and is likewise unverified until screenshots are inspected.
